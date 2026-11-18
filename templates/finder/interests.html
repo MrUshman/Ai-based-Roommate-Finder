@@ -1,0 +1,135 @@
+{% extends "finder/base.html" %}
+
+{% block title %}Interests & Connections • AI Roommate Finder{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+  <div>
+    <h2 class="fw-bold mb-1"><i class="bi bi-chat-heart-fill text-danger me-2"></i>Interests & Connections</h2>
+    <p class="text-muted mb-0">Manage incoming and outgoing roommate connection requests. Accept to exchange contact details.</p>
+  </div>
+</div>
+
+<!-- Send New Interest Box -->
+<div class="card p-4 mb-4 shadow-sm border-0">
+  <h5 class="fw-bold mb-2"><i class="bi bi-send-plus-fill text-primary me-2"></i>Send a Connection Request</h5>
+  <p class="text-muted small mb-3">Introduce yourself to another seeker. Once accepted, both parties will see each other's phone and email.</p>
+
+  <form method="post" action="/interests/send/">
+    {% csrf_token %}
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small fw-bold text-muted mb-1">From Profile (Sender)</label>
+        <select name="from_profile" class="form-select rounded-3" required>
+          <option value="">-- Choose Sender --</option>
+          {% for p in profiles %}
+            <option value="{{ p.pk }}">{{ p.name }} ({{ p.city }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label small fw-bold text-muted mb-1">To Profile (Recipient)</label>
+        <select name="to_profile" class="form-select rounded-3" required>
+          <option value="">-- Choose Recipient --</option>
+          {% for p in profiles %}
+            <option value="{{ p.pk }}">{{ p.name }} ({{ p.city }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label small fw-bold text-muted mb-1">Intro Message</label>
+        <input name="message" class="form-control rounded-3" placeholder="e.g. Hey, I liked your profile! Let's team up.">
+      </div>
+
+      <div class="col-md-2">
+        <button class="btn btn-primary-custom w-100 rounded-3">
+          <i class="bi bi-send-fill me-1"></i> Send Request
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Interests Stream -->
+<h5 class="fw-bold mb-3"><i class="bi bi-clock-history text-secondary me-2"></i>Connection History</h5>
+<div class="d-flex flex-column gap-3 mb-5">
+  {% for i in interests %}
+    <div class="card p-4 shadow-sm border-0 card-interactive">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="avatar-circle">
+            {{ i.from_profile.name|slice:":1" }}
+          </div>
+          <div>
+            <div class="fw-bold">
+              <a href="/profiles/{{ i.from_profile.pk }}/" class="text-decoration-none text-dark">{{ i.from_profile.name }}</a>
+              <span class="text-muted mx-1">→</span>
+              <a href="/profiles/{{ i.to_profile.pk }}/" class="text-decoration-none text-dark">{{ i.to_profile.name }}</a>
+            </div>
+            <small class="text-muted">
+              <i class="bi bi-clock me-1"></i> {{ i.created_at|date:"M d, Y, h:i A" }}
+            </small>
+          </div>
+        </div>
+
+        <div>
+          {% if i.status == "accepted" %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 fw-semibold">
+              <i class="bi bi-check-circle-fill me-1"></i> Accepted
+            </span>
+          {% elif i.status == "rejected" %}
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-2 fw-semibold">
+              <i class="bi bi-x-circle-fill me-1"></i> Rejected
+            </span>
+          {% else %}
+            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-3 py-2 fw-semibold">
+              <i class="bi bi-hourglass-split me-1"></i> Pending
+            </span>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if i.message %}
+        <div class="p-3 bg-light rounded-3 mb-3 small text-muted">
+          "{{ i.message }}"
+        </div>
+      {% endif %}
+
+      <!-- Actions & Unlocked Info -->
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 pt-2 border-top">
+        <div>
+          {% if i.status == "accepted" %}
+            <div class="small text-success fw-semibold">
+              <i class="bi bi-telephone-fill me-1"></i> {{ i.to_profile.phone|default:"Phone provided on request" }} • 
+              <i class="bi bi-envelope-fill ms-2 me-1"></i> {{ i.to_profile.email|default:"Email provided on request" }}
+            </div>
+          {% else %}
+            <small class="text-muted">Contact details unlock upon acceptance.</small>
+          {% endif %}
+        </div>
+
+        {% if i.status == "pending" %}
+          <form method="post" class="d-flex gap-2 m-0">
+            {% csrf_token %}
+            <input type="hidden" name="interest_id" value="{{ i.pk }}">
+            <button name="action" value="accepted" class="btn btn-sm btn-success rounded-pill px-3 fw-semibold">
+              <i class="bi bi-check-lg me-1"></i> Accept Connection
+            </button>
+            <button name="action" value="rejected" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold">
+              <i class="bi bi-x-lg me-1"></i> Decline
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <div class="card p-5 text-center shadow-sm border-0">
+      <i class="bi bi-chat-heart display-4 text-muted mb-3"></i>
+      <h5 class="fw-bold">No Interests Sent Yet</h5>
+      <p class="text-muted small">Explore profiles and send an interest request to get connected.</p>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

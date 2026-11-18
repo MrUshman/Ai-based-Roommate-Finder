@@ -1,0 +1,143 @@
+{% extends "finder/base.html" %}
+
+{% block title %}Seeker Profiles • AI Roommate Finder{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+  <div>
+    <h2 class="fw-bold mb-1"><i class="bi bi-people text-primary me-2"></i>Roommate Profiles</h2>
+    <p class="text-muted mb-0">Browse verified profiles looking for roommates in your city.</p>
+  </div>
+  <a class="btn btn-primary-custom rounded-pill px-4 shadow-sm" href="/profiles/create/">
+    <i class="bi bi-plus-lg me-1"></i> Create My Profile
+  </a>
+</div>
+
+<!-- Modern Filter Card -->
+<form method="get" class="card p-3 p-md-4 mb-4 shadow-sm border-0">
+  <div class="row g-3 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label small fw-bold text-muted mb-1"><i class="bi bi-geo-alt me-1"></i> City</label>
+      <select name="city" class="form-select rounded-3">
+        <option value="">All Cities</option>
+        {% for c in cities %}
+          <option value="{{ c }}" {% if filters.city == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label small fw-bold text-muted mb-1"><i class="bi bi-gender-ambiguous me-1"></i> Gender</label>
+      <select name="gender" class="form-select rounded-3">
+        <option value="">Any Gender</option>
+        <option value="male" {% if filters.gender == 'male' %}selected{% endif %}>Male</option>
+        <option value="female" {% if filters.gender == 'female' %}selected{% endif %}>Female</option>
+        <option value="other" {% if filters.gender == 'other' %}selected{% endif %}>Other</option>
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label class="form-label small fw-bold text-muted mb-1"><i class="bi bi-cash-stack me-1"></i> Max Budget (₹)</label>
+      <input type="number" name="max_budget" class="form-control rounded-3" placeholder="e.g. 15000" value="{{ filters.max_budget }}">
+    </div>
+
+    <div class="col-md-3">
+      <label class="form-label small fw-bold text-muted mb-1"><i class="bi bi-egg-fried me-1"></i> Food Preference</label>
+      <select name="food_pref" class="form-select rounded-3">
+        <option value="">Any Food Preference</option>
+        <option value="veg" {% if filters.food_pref == 'veg' %}selected{% endif %}>Vegetarian</option>
+        <option value="non-veg" {% if filters.food_pref == 'non-veg' %}selected{% endif %}>Non-Vegetarian</option>
+        <option value="eggetarian" {% if filters.food_pref == 'eggetarian' %}selected{% endif %}>Eggetarian</option>
+        <option value="any" {% if filters.food_pref == 'any' %}selected{% endif %}>Any</option>
+      </select>
+    </div>
+
+    <div class="col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-dark rounded-3 w-100 fw-semibold">
+        <i class="bi bi-funnel-fill me-1"></i> Filter
+      </button>
+      {% if filters.city or filters.gender or filters.max_budget or filters.food_pref %}
+        <a href="/profiles/" class="btn btn-outline-secondary rounded-3" title="Clear filters">
+          <i class="bi bi-x-lg"></i>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</form>
+
+<!-- Profile Cards Grid -->
+<div class="row g-4">
+  {% for p in profiles %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card p-3 p-lg-4 h-100 card-interactive d-flex flex-column justify-content-between">
+        <div>
+          <!-- Header info -->
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="avatar-circle">
+              {{ p.name|slice:":1" }}
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0">
+                <a href="/profiles/{{ p.pk }}/" class="text-dark text-decoration-none">{{ p.name }}</a>
+              </h5>
+              <span class="text-muted small">
+                {{ p.age }} yrs • {{ p.get_gender_display }} • <span class="badge bg-light text-dark border">{{ p.get_occupation_display }}</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Location & Budget -->
+          <div class="bg-light p-2 rounded-3 mb-3 small">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Location:</span>
+              <strong class="text-dark">{{ p.city }}{% if p.preferred_area %}, {{ p.preferred_area }}{% endif %}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span class="text-muted"><i class="bi bi-wallet2 text-success me-1"></i> Budget:</span>
+              <strong class="text-primary">₹{{ p.budget_min }} – ₹{{ p.budget_max }}</strong>
+            </div>
+          </div>
+
+          <!-- Lifestyle Pills -->
+          <div class="d-flex flex-wrap gap-1 mb-3">
+            <span class="badge bg-secondary-subtle text-secondary border small">
+              <i class="bi bi-egg-fried me-1"></i> {{ p.get_food_pref_display }}
+            </span>
+            <span class="badge bg-secondary-subtle text-secondary border small">
+              <i class="bi bi-stars me-1"></i> Cleanliness {{ p.cleanliness }}/5
+            </span>
+            <span class="badge bg-secondary-subtle text-secondary border small">
+              <i class="bi bi-moon me-1"></i> {{ p.get_sleep_schedule_display }}
+            </span>
+            <span class="badge bg-secondary-subtle text-secondary border small">
+              <i class="bi bi-clock me-1"></i> {{ p.get_work_schedule_display }}
+            </span>
+          </div>
+
+          <!-- Bio -->
+          <p class="text-muted small mb-3">
+            {{ p.bio|default:"No bio provided yet."|truncatechars:100 }}
+          </p>
+        </div>
+
+        <!-- Action Links -->
+        <div class="d-flex gap-2 pt-2 border-top">
+          <a href="/profiles/{{ p.pk }}/" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1 fw-semibold">
+            View Details
+          </a>
+          <a href="/calculator/?a={{ p.pk }}" class="btn btn-sm btn-light border rounded-pill px-3" title="Compare with another profile">
+            <i class="bi bi-calculator"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12 text-center py-5">
+      <i class="bi bi-search display-3 text-muted mb-3 d-block"></i>
+      <h5 class="fw-bold">No profiles matched your filter</h5>
+      <p class="text-muted mb-3">Try adjusting your filters or clear them to see all profiles.</p>
+      <a href="/profiles/" class="btn btn-outline-primary rounded-pill px-4">Reset Filters</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

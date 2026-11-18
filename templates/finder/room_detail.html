@@ -1,0 +1,105 @@
+{% extends "finder/base.html" %}
+
+{% block title %}{{ room.title }} • Room Details{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card p-4 p-md-5 shadow-sm border-0 mb-4">
+      <!-- Title & Price Header -->
+      <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-start gap-3 pb-3 mb-4 border-bottom">
+        <div>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 mb-2 fw-semibold">
+            {{ room.get_room_type_display }}
+          </span>
+          <h2 class="fw-bold mb-1">{{ room.title }}</h2>
+          <p class="text-muted mb-0">
+            <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ room.city }}, {{ room.area }}
+          </p>
+        </div>
+        <div class="text-sm-end">
+          <div class="display-6 fw-bold text-success">₹{{ room.rent }}</div>
+          <small class="text-muted">per month</small>
+        </div>
+      </div>
+
+      <!-- Quick Specs -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+          <div class="p-3 bg-light rounded-4 text-center">
+            <i class="bi bi-lamp fs-4 text-primary d-block mb-1"></i>
+            <small class="text-muted d-block">Furnishing</small>
+            <strong>{{ room.get_furnished_display }}</strong>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="p-3 bg-light rounded-4 text-center">
+            <i class="bi bi-calendar-event fs-4 text-info d-block mb-1"></i>
+            <small class="text-muted d-block">Available From</small>
+            <strong>{{ room.available_from|default:"Immediate" }}</strong>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="p-3 bg-light rounded-4 text-center">
+            <i class="bi bi-gender-ambiguous fs-4 text-warning d-block mb-1"></i>
+            <small class="text-muted d-block">Preferred Gender</small>
+            <strong>{{ room.get_looking_for_gender_display }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      {% if room.description %}
+        <div class="mb-4">
+          <h5 class="fw-bold mb-2"><i class="bi bi-card-text text-primary me-2"></i>Description</h5>
+          <p class="text-muted leading-relaxed mb-0">{{ room.description }}</p>
+        </div>
+      {% endif %}
+
+      <!-- Amenities -->
+      {% if room.amenities %}
+        <div class="mb-4">
+          <h5 class="fw-bold mb-2"><i class="bi bi-check2-circle text-success me-2"></i>Amenities & Features</h5>
+          <div class="p-3 bg-light rounded-4 text-muted small">
+            {{ room.amenities }}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Room Owner / Lister Info Sidebar -->
+  <div class="col-lg-4">
+    <div class="card p-4 shadow-sm border-0 sticky-top" style="top: 100px;">
+      <h5 class="fw-bold mb-3"><i class="bi bi-person-badge text-primary me-2"></i>Listed By</h5>
+
+      {% if room.owner %}
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="avatar-circle">
+            {{ room.owner.name|slice:":1" }}
+          </div>
+          <div>
+            <h6 class="fw-bold mb-0">
+              <a href="/profiles/{{ room.owner.pk }}/" class="text-dark text-decoration-none">{{ room.owner.name }}</a>
+            </h6>
+            <small class="text-muted">{{ room.owner.city }} • {{ room.owner.get_occupation_display }}</small>
+          </div>
+        </div>
+
+        <p class="text-muted small mb-3">
+          {{ room.owner.bio|default:"No bio written."|truncatechars:90 }}
+        </p>
+
+        <a href="/profiles/{{ room.owner.pk }}/" class="btn btn-primary-custom rounded-pill w-100 fw-semibold mb-2">
+          <i class="bi bi-person-fill me-1"></i> View Full Profile
+        </a>
+        <a href="/calculator/?a={{ room.owner.pk }}" class="btn btn-outline-secondary rounded-pill w-100 fw-semibold">
+          <i class="bi bi-calculator me-1"></i> Calculate Compatibility
+        </a>
+      {% else %}
+        <p class="text-muted small mb-0">Posted directly or by an external owner.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

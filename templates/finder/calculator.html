@@ -1,0 +1,159 @@
+{% extends "finder/base.html" %}
+
+{% block title %}Compatibility Calculator • AI Roommate Finder{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h2 class="fw-bold mb-1"><i class="bi bi-calculator-fill text-primary me-2"></i>AI Compatibility Calculator</h2>
+  <p class="text-muted mb-0">Select any two profiles to view an explainable 8-factor compatibility breakdown.</p>
+</div>
+
+<!-- Comparison Selector Form -->
+<form method="post" class="card p-4 mb-4 shadow-sm border-0">
+  {% csrf_token %}
+  <div class="row g-3 align-items-end">
+    <div class="col-md-5">
+      <label class="form-label small fw-bold text-muted mb-1"><i class="bi bi-person-fill text-primary me-1"></i> First Candidate (Profile A)</label>
+      <select name="a" class="form-select form-select-lg rounded-3 fs-6" required>
+        <option value="">-- Choose Profile A --</option>
+        {% for p in profiles %}
+          <option value="{{ p.pk }}" {% if a.pk == p.pk %}selected{% endif %}>
+            {{ p.name }} ({{ p.city }} • ₹{{ p.budget_min }}–{{ p.budget_max }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-5">
+      <label class="form-label small fw-bold text-muted mb-1"><i class="bi bi-person-fill text-info me-1"></i> Second Candidate (Profile B)</label>
+      <select name="b" class="form-select form-select-lg rounded-3 fs-6" required>
+        <option value="">-- Choose Profile B --</option>
+        {% for p in profiles %}
+          <option value="{{ p.pk }}" {% if b.pk == p.pk %}selected{% endif %}>
+            {{ p.name }} ({{ p.city }} • ₹{{ p.budget_min }}–{{ p.budget_max }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <button class="btn btn-primary-custom btn-lg w-100 rounded-3 fs-6">
+        <i class="bi bi-cpu me-1"></i> Calculate
+      </button>
+    </div>
+  </div>
+</form>
+
+<!-- Calculation Result -->
+{% if result %}
+  <div class="card p-4 p-md-5 mb-4 shadow-sm border-0">
+    <div class="row align-items-center mb-4 pb-4 border-bottom g-3">
+      <div class="col-md-8">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div class="d-flex align-items-center gap-2">
+            <span class="avatar-circle">{{ a.name|slice:":1" }}</span>
+            <h4 class="fw-bold mb-0">{{ a.name }}</h4>
+          </div>
+          <span class="text-muted fs-4">+</span>
+          <div class="d-flex align-items-center gap-2">
+            <span class="avatar-circle" style="background: linear-gradient(135deg, #06b6d4, #0284c7);">{{ b.name|slice:":1" }}</span>
+            <h4 class="fw-bold mb-0">{{ b.name }}</h4>
+          </div>
+        </div>
+        <p class="text-muted mb-0 small">
+          {{ a.city }} vs {{ b.city }} • Budgets: ₹{{ a.budget_min }}–{{ a.budget_max }} and ₹{{ b.budget_min }}–{{ b.budget_max }}
+        </p>
+      </div>
+
+      <div class="col-md-4 text-md-end">
+        <div class="d-inline-flex flex-column align-items-md-end">
+          <span class="badge-score-pill {% if result.total >= 80 %}score-excellent{% elif result.total >= 65 %}score-good{% elif result.total >= 50 %}score-moderate{% else %}score-low{% endif %} fs-5 px-4 py-2">
+            {{ result.total }}% • {{ result.level }}
+          </span>
+          <small class="text-muted mt-1">Overall Match Score</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overall Progress Bar -->
+    <div class="progress rounded-pill mb-4" style="height: 12px;">
+      <div class="progress-bar {% if result.total >= 80 %}bg-success{% elif result.total >= 65 %}bg-info{% elif result.total >= 50 %}bg-warning{% else %}bg-danger{% endif %}" style="width: {{ result.total }}%"></div>
+    </div>
+
+    <!-- Factor-by-Factor Breakdown -->
+    <h5 class="fw-bold mb-3"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Explainable Factor Breakdown</h5>
+    <div class="row g-3 mb-4">
+      {% for item in result.breakdown %}
+        <div class="col-md-6">
+          <div class="p-3 bg-light rounded-4 h-100 border">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-bold text-dark">{{ item.factor }}</span>
+              <span class="fw-bold text-primary">{{ item.score }} / {{ item.max }} pts</span>
+            </div>
+            <div class="bar-wrapper mb-2">
+              <div class="bar-fill" style="width: {% widthratio item.score item.max 100 %}%;"></div>
+            </div>
+            <p class="small text-muted mb-0">{{ item.reason }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Side-by-Side Comparison Matrix -->
+    <h5 class="fw-bold mb-3"><i class="bi bi-layout-split text-info me-2"></i>Side-by-Side Comparison</h5>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 25%;">Feature</th>
+            <th style="width: 37.5%;" class="text-primary">{{ a.name }}</th>
+            <th style="width: 37.5%;" class="text-info">{{ b.name }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>City & Area</strong></td>
+            <td>{{ a.city }}{% if a.preferred_area %}, {{ a.preferred_area }}{% endif %}</td>
+            <td>{{ b.city }}{% if b.preferred_area %}, {{ b.preferred_area }}{% endif %}</td>
+          </tr>
+          <tr>
+            <td><strong>Budget Range</strong></td>
+            <td>₹{{ a.budget_min }} – ₹{{ a.budget_max }}</td>
+            <td>₹{{ b.budget_min }} – ₹{{ b.budget_max }}</td>
+          </tr>
+          <tr>
+            <td><strong>Food Preference</strong></td>
+            <td>{{ a.get_food_pref_display }}</td>
+            <td>{{ b.get_food_pref_display }}</td>
+          </tr>
+          <tr>
+            <td><strong>Smoking / Drinking</strong></td>
+            <td>{{ a.get_smoking_display }} / {{ a.get_drinking_display }}</td>
+            <td>{{ b.get_smoking_display }} / {{ b.get_drinking_display }}</td>
+          </tr>
+          <tr>
+            <td><strong>Cleanliness</strong></td>
+            <td>{{ a.cleanliness }}/5</td>
+            <td>{{ b.cleanliness }}/5</td>
+          </tr>
+          <tr>
+            <td><strong>Sleep Routine</strong></td>
+            <td>{{ a.get_sleep_schedule_display }}</td>
+            <td>{{ b.get_sleep_schedule_display }}</td>
+          </tr>
+          <tr>
+            <td><strong>Work Schedule</strong></td>
+            <td>{{ a.get_work_schedule_display }}</td>
+            <td>{{ b.get_work_schedule_display }}</td>
+          </tr>
+          <tr>
+            <td><strong>Pets Allowed</strong></td>
+            <td>{% if a.pets_ok %}<span class="text-success"><i class="bi bi-check-circle-fill"></i> Yes</span>{% else %}No{% endif %}</td>
+            <td>{% if b.pets_ok %}<span class="text-success"><i class="bi bi-check-circle-fill"></i> Yes</span>{% else %}No{% endif %}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "finder/base.html" %}
+
+{% block title %}Login • AI Roommate Finder{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+  <div class="col-md-7 col-lg-5">
+    <div class="card p-4 p-md-5 shadow-sm border-0">
+      <div class="text-center mb-4">
+        <div class="brand-icon mx-auto mb-3" style="width: 52px; height: 52px; font-size: 1.6rem;">
+          <i class="bi bi-shield-lock-fill"></i>
+        </div>
+        <h3 class="fw-bold mb-1">Welcome Back</h3>
+        <p class="text-muted small">Log in to manage your profile, saved rooms, and interests.</p>
+      </div>
+
+      <!-- Demo Credentials Callout -->
+      <div class="alert alert-light border rounded-3 p-2 text-center small text-muted mb-4">
+        <i class="bi bi-info-circle me-1 text-primary"></i> Demo Admin: <code>admin</code> / <code>admin123</code>
+      </div>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger rounded-3 small mb-3">
+            {{ form.non_field_errors.0 }}
+          </div>
+        {% endif %}
+
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted mb-1" for="{{ field.id_for_label }}">
+              {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.errors %}
+              <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary-custom w-100 rounded-pill py-2 fw-bold mt-2">
+          Sign In
+        </button>
+      </form>
+
+      <div class="text-center mt-4 pt-3 border-top small text-muted">
+        Don't have an account? <a href="/register/" class="text-primary fw-semibold text-decoration-none">Register here</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

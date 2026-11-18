@@ -1,0 +1,215 @@
+{% extends "finder/base.html" %}
+
+{% block title %}{{ profile.name }} • Profile Details{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Main Profile Card -->
+  <div class="col-lg-8">
+    <div class="card p-4 p-md-5 mb-4 shadow-sm border-0">
+      <!-- Profile Header -->
+      <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 pb-4 mb-4 border-bottom">
+        <div class="d-flex align-items-center gap-3">
+          <div class="avatar-circle" style="width: 64px; height: 64px; font-size: 1.5rem;">
+            {{ profile.name|slice:":1" }}
+          </div>
+          <div>
+            <h2 class="fw-bold mb-1">{{ profile.name }}</h2>
+            <div class="text-muted small">
+              {{ profile.age }} years old • {{ profile.get_gender_display }} • 
+              <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill">
+                {{ profile.get_occupation_display }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <a href="/calculator/?a={{ profile.pk }}" class="btn btn-outline-primary rounded-pill px-3 py-2 fw-semibold">
+          <i class="bi bi-calculator me-1"></i> Calculate Match
+        </a>
+      </div>
+
+      <!-- About / Bio -->
+      <div class="mb-4">
+        <h5 class="fw-bold mb-2"><i class="bi bi-chat-quote text-primary me-2"></i>About</h5>
+        <p class="text-muted leading-relaxed mb-0">
+          {{ profile.bio|default:"No bio written yet." }}
+        </p>
+      </div>
+
+      <!-- Attributes Grid -->
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6">
+          <div class="p-3 bg-light rounded-4 h-100">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-geo-alt-fill text-danger me-1"></i> Housing & Budget</h6>
+            <ul class="list-unstyled mb-0 small">
+              <li class="d-flex justify-content-between py-1 border-bottom">
+                <span class="text-muted">Target City:</span>
+                <strong>{{ profile.city }}</strong>
+              </li>
+              <li class="d-flex justify-content-between py-1 border-bottom">
+                <span class="text-muted">Preferred Area:</span>
+                <strong>{{ profile.preferred_area|default:"Any" }}</strong>
+              </li>
+              <li class="d-flex justify-content-between py-1 border-bottom">
+                <span class="text-muted">Monthly Budget:</span>
+                <strong class="text-primary">₹{{ profile.budget_min }} – ₹{{ profile.budget_max }}</strong>
+              </li>
+              <li class="d-flex justify-content-between py-1">
+                <span class="text-muted">Move-in Date:</span>
+                <strong>{{ profile.move_in_date|default:"Immediate / Flexible" }}</strong>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="p-3 bg-light rounded-4 h-100">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-heart-pulse-fill text-info me-1"></i> Lifestyle & Habits</h6>
+            <ul class="list-unstyled mb-0 small">
+              <li class="d-flex justify-content-between py-1 border-bottom">
+                <span class="text-muted">Food Preference:</span>
+                <strong>{{ profile.get_food_pref_display }}</strong>
+              </li>
+              <li class="d-flex justify-content-between py-1 border-bottom">
+                <span class="text-muted">Smoking:</span>
+                <strong>{{ profile.get_smoking_display }}</strong>
+              </li>
+              <li class="d-flex justify-content-between py-1 border-bottom">
+                <span class="text-muted">Drinking:</span>
+                <strong>{{ profile.get_drinking_display }}</strong>
+              </li>
+              <li class="d-flex justify-content-between py-1">
+                <span class="text-muted">Pets OK:</span>
+                <strong>{% if profile.pets_ok %}<span class="text-success"><i class="bi bi-check-circle-fill"></i> Yes</span>{% else %}<span class="text-muted">No</span>{% endif %}</strong>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="p-3 bg-light rounded-4 h-100">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history text-warning me-1"></i> Daily Routine</h6>
+            <ul class="list-unstyled mb-0 small">
+              <li class="d-flex justify-content-between py-1 border-bottom">
+                <span class="text-muted">Sleep Routine:</span>
+                <strong>{{ profile.get_sleep_schedule_display }}</strong>
+              </li>
+              <li class="d-flex justify-content-between py-1 border-bottom">
+                <span class="text-muted">Work Shift:</span>
+                <strong>{{ profile.get_work_schedule_display }}</strong>
+              </li>
+              <li class="d-flex justify-content-between py-1">
+                <span class="text-muted">Cleanliness Level:</span>
+                <strong>{{ profile.cleanliness }}/5</strong>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-sm-6">
+          <div class="p-3 bg-light rounded-4 h-100">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-people-fill text-primary me-1"></i> Social & Living</h6>
+            <ul class="list-unstyled mb-0 small">
+              <li class="d-flex justify-content-between py-1 border-bottom">
+                <span class="text-muted">Guests Frequency:</span>
+                <strong>{{ profile.get_guests_freq_display }}</strong>
+              </li>
+              <li class="d-flex justify-content-between py-1">
+                <span class="text-muted">Noise Tolerance:</span>
+                <strong>{{ profile.get_noise_tolerance_display }}</strong>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Info Section -->
+      {% if show_contact %}
+        <div class="alert alert-success rounded-4 p-3 d-flex align-items-center gap-3 mb-4">
+          <i class="bi bi-unlock-fill fs-2 text-success"></i>
+          <div>
+            <h6 class="fw-bold mb-1">Direct Contact Unlocked!</h6>
+            <p class="mb-0 small">
+              <i class="bi bi-envelope me-1"></i> <a href="mailto:{{ profile.email }}" class="text-success fw-bold">{{ profile.email }}</a>
+              {% if profile.phone %}
+                • <i class="bi bi-telephone ms-2 me-1"></i> <a href="tel:{{ profile.phone }}" class="text-success fw-bold">{{ profile.phone }}</a>
+              {% endif %}
+            </p>
+          </div>
+        </div>
+      {% else %}
+        <div class="alert alert-info rounded-4 p-3 d-flex align-items-center gap-3 mb-4">
+          <i class="bi bi-lock-fill fs-3 text-info"></i>
+          <div class="small">
+            <strong>Contact Info is Protected.</strong> Contact details are revealed once an interest request is accepted by both parties.
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Send Interest Section -->
+      <div class="card p-3 p-md-4 bg-light border-0 rounded-4">
+        <h5 class="fw-bold mb-2"><i class="bi bi-send-fill text-primary me-2"></i>Send Connection Request</h5>
+        <p class="text-muted small mb-3">Introduce yourself and propose sharing an apartment or room.</p>
+
+        <form method="post" action="/interests/send/">
+          {% csrf_token %}
+          <input type="hidden" name="to_profile" value="{{ profile.pk }}">
+
+          <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+              <label class="form-label small fw-bold text-muted mb-1">Select Your Profile (Sender)</label>
+              <select name="from_profile" class="form-select rounded-3" required>
+                <option value="">-- Choose sender profile --</option>
+                {% for o in all_profiles %}
+                  <option value="{{ o.pk }}">{{ o.name }} ({{ o.city }})</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label small fw-bold text-muted mb-1">Intro Message</label>
+              <input name="message" class="form-control rounded-3" placeholder="Hi {{ profile.name }}, let's connect!">
+            </div>
+            <div class="col-md-3">
+              <button class="btn btn-primary-custom rounded-3 w-100">
+                <i class="bi bi-paperplane-fill me-1"></i> Send Request
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Best AI Matches Sidebar -->
+  <div class="col-lg-4">
+    <div class="card p-4 shadow-sm border-0 sticky-top" style="top: 100px;">
+      <h5 class="fw-bold mb-3"><i class="bi bi-stars text-warning me-2"></i>Top AI Matches for {{ profile.name }}</h5>
+      <p class="text-muted small mb-3">Calculated using our 8-factor explainable matching algorithm.</p>
+
+      <div class="d-flex flex-column gap-3">
+        {% for m in matches %}
+          <div class="card p-3 card-interactive border">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h6 class="fw-bold mb-0">
+                <a href="/profiles/{{ m.profile.pk }}/" class="text-decoration-none text-dark">{{ m.profile.name }}</a>
+              </h6>
+              <span class="badge-score-pill {% if m.total >= 80 %}score-excellent{% elif m.total >= 65 %}score-good{% else %}score-moderate{% endif %} small">
+                {{ m.total }}%
+              </span>
+            </div>
+            <p class="text-muted small mb-2">
+              <i class="bi bi-geo-alt"></i> {{ m.profile.city }} • ₹{{ m.profile.budget_min }}–{{ m.profile.budget_max }}
+            </p>
+            <a href="/calculator/?a={{ profile.pk }}&b={{ m.profile.pk }}" class="btn btn-sm btn-light border rounded-pill text-primary fw-semibold">
+              <i class="bi bi-calculator me-1"></i> Compare Breakdown
+            </a>
+          </div>
+        {% empty %}
+          <p class="text-muted small">No other profiles to match against.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

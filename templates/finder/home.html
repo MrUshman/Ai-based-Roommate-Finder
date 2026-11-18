@@ -1,0 +1,279 @@
+{% extends "finder/base.html" %}
+
+{% block title %}Dashboard • AI Roommate Finder{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-banner mb-4">
+  <div class="row align-items-center">
+    <div class="col-lg-8">
+      <span class="badge bg-white text-primary fw-bold px-3 py-2 rounded-pill mb-3">
+        <i class="bi bi-cpu-fill me-1"></i> Explainable AI Matching Engine
+      </span>
+      <h1 class="display-6 fw-bold mb-2">Find Your Ideal Roommate with Smart AI Scoring</h1>
+      <p class="lead mb-4 text-white-50">
+        Transparent 100-point compatibility analysis across budget, location, lifestyle, sleep patterns, cleanliness, and habits.
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-light rounded-pill px-4 py-2 fw-bold text-primary shadow-sm" href="/matches/">
+          <i class="bi bi-stars me-1"></i> Find My Match
+        </a>
+        <a class="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold" href="/profiles/create/">
+          <i class="bi bi-person-plus-fill me-1"></i> Create Profile
+        </a>
+        <a class="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold" href="/calculator/">
+          <i class="bi bi-calculator me-1"></i> Compatibility Calculator
+        </a>
+      </div>
+    </div>
+    <div class="col-lg-4 d-none d-lg-block text-center">
+      <div class="p-3 bg-white bg-opacity-10 rounded-4 border border-white border-opacity-25 backdrop-blur">
+        <i class="bi bi-shield-check display-3 text-white mb-2 d-block"></i>
+        <h5 class="fw-bold mb-1">100% Privacy-First</h5>
+        <p class="small text-white-50 mb-0">Contact details unlock only when both seekers accept connection interests.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Overview Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card p-3 h-100 card-interactive">
+      <div class="d-flex align-items-center gap-3">
+        <div class="avatar-circle" style="background: linear-gradient(135deg, #6366f1, #4f46e5);">
+          <i class="bi bi-people-fill"></i>
+        </div>
+        <div>
+          <h2 class="h3 fw-bold mb-0 text-dark">{{ stats.total_seekers }}</h2>
+          <span class="text-muted small fw-medium">Active Seekers</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card p-3 h-100 card-interactive">
+      <div class="d-flex align-items-center gap-3">
+        <div class="avatar-circle" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+          <i class="bi bi-door-open-fill"></i>
+        </div>
+        <div>
+          <h2 class="h3 fw-bold mb-0 text-dark">{{ stats.total_rooms }}</h2>
+          <span class="text-muted small fw-medium">Available Rooms</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card p-3 h-100 card-interactive">
+      <div class="d-flex align-items-center gap-3">
+        <div class="avatar-circle" style="background: linear-gradient(135deg, #10b981, #059669);">
+          <i class="bi bi-geo-alt-fill"></i>
+        </div>
+        <div>
+          <h2 class="h3 fw-bold mb-0 text-dark">{{ stats.cities }}</h2>
+          <span class="text-muted small fw-medium">Cities Covered</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-xl-3">
+    <div class="card p-3 h-100 card-interactive">
+      <div class="d-flex align-items-center gap-3">
+        <div class="avatar-circle" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+          <i class="bi bi-currency-rupee"></i>
+        </div>
+        <div>
+          <h2 class="h3 fw-bold mb-0 text-dark">₹{{ stats.avg_rent }}</h2>
+          <span class="text-muted small fw-medium">Average Rent / mo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Interactive Analytics Charts -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card p-4 h-100 shadow-sm">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Seekers Distribution by City</h5>
+        <span class="badge bg-light text-secondary border">Live</span>
+      </div>
+      <div style="position: relative; height: 260px;">
+        <canvas id="cityChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card p-4 h-100 shadow-sm">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0"><i class="bi bi-graph-up text-info me-2"></i>Average Rent by City</h5>
+        <span class="badge bg-light text-secondary border">₹ INR / mo</span>
+      </div>
+      <div style="position: relative; height: 260px;">
+        <canvas id="rentChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Top Compatible Matches -->
+<div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+  <div>
+    <h4 class="fw-bold mb-1"><i class="bi bi-stars text-warning me-2"></i>Top AI-Compatible Pairs</h4>
+    <p class="text-muted small mb-0">Highest scoring matches computed across lifestyle, habits, and budgets</p>
+  </div>
+  <a href="/matches/" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+    Explore All Matches <i class="bi bi-arrow-right ms-1"></i>
+  </a>
+</div>
+
+<div class="row g-3 mb-5">
+  {% for p in top_matches %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card p-3 h-100 card-interactive position-relative">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <h6 class="fw-bold text-dark mb-0">{{ p.a.name }}</h6>
+            <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ p.a.city }}</small>
+          </div>
+          <span class="badge-score-pill {% if p.total >= 80 %}score-excellent{% elif p.total >= 65 %}score-good{% else %}score-moderate{% endif %}">
+            {{ p.total }}% • {{ p.level }}
+          </span>
+        </div>
+
+        <div class="text-center my-1 text-muted small">
+          <i class="bi bi-arrow-left-right text-primary"></i> paired with
+        </div>
+
+        <div class="mb-3">
+          <h6 class="fw-bold text-dark mb-0">{{ p.b.name }}</h6>
+          <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ p.b.city }}</small>
+        </div>
+
+        <div class="progress mb-3" style="height: 6px;">
+          <div class="progress-bar bg-success" role="progressbar" style="width: {{ p.total }}%"></div>
+        </div>
+
+        <a href="/calculator/?a={{ p.a.pk }}&b={{ p.b.pk }}" class="btn btn-sm btn-light border text-primary rounded-pill w-100 mt-auto fw-semibold">
+          <i class="bi bi-calculator me-1"></i> View Compatibility Breakdown
+        </a>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12"><p class="text-muted">No matches computed yet.</p></div>
+  {% endfor %}
+</div>
+
+<!-- Recent Room Listings -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="fw-bold mb-1"><i class="bi bi-house-door text-primary me-2"></i>Recently Listed Rooms</h4>
+    <p class="text-muted small mb-0">Verified roommate spaces across top metropolitan cities</p>
+  </div>
+  <a href="/rooms/" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+    Browse All Rooms <i class="bi bi-arrow-right ms-1"></i>
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for r in recent_rooms %}
+    <div class="col-md-6 col-lg-4">
+      <div class="card p-3 h-100 card-interactive">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1 small fw-semibold">
+            {{ r.get_room_type_display }}
+          </span>
+          <span class="fw-bold text-success">₹{{ r.rent }} <small class="text-muted fw-normal">/mo</small></span>
+        </div>
+        <h6 class="fw-bold mb-1">
+          <a href="/rooms/{{ r.pk }}/" class="text-decoration-none text-dark stretched-link">{{ r.title }}</a>
+        </h6>
+        <p class="text-muted small mb-2">
+          <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ r.city }}, {{ r.area }}
+        </p>
+        <div class="small text-muted mt-auto pt-2 border-top d-flex justify-content-between">
+          <span><i class="bi bi-lamp me-1"></i> {{ r.get_furnished_display }}</span>
+          <span><i class="bi bi-gender-ambiguous me-1"></i> {{ r.get_looking_for_gender_display }}</span>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12"><p class="text-muted">No rooms listed yet.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // City Chart
+  const cityLabels = [{% for x in by_city %}"{{ x.city }}",{% endfor %}];
+  const cityCounts = [{% for x in by_city %}{{ x.c }},{% endfor %}];
+
+  if (document.getElementById('cityChart')) {
+    new Chart(document.getElementById('cityChart'), {
+      type: 'bar',
+      data: {
+        labels: cityLabels,
+        datasets: [{
+          label: 'Seekers',
+          data: cityCounts,
+          backgroundColor: '#6366f1',
+          borderRadius: 8,
+          maxBarThickness: 32
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // Rent Chart
+  const rentLabels = [{% for x in rent_by_city %}"{{ x.city }}",{% endfor %}];
+  const rentAverages = [{% for x in rent_by_city %}{{ x.avg }},{% endfor %}];
+
+  if (document.getElementById('rentChart')) {
+    new Chart(document.getElementById('rentChart'), {
+      type: 'line',
+      data: {
+        labels: rentLabels,
+        datasets: [{
+          label: 'Avg Rent (₹)',
+          data: rentAverages,
+          borderColor: '#06b6d4',
+          backgroundColor: 'rgba(6, 182, 212, 0.1)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 5,
+          pointBackgroundColor: '#0891b2'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

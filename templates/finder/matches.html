@@ -1,0 +1,106 @@
+{% extends "finder/base.html" %}
+
+{% block title %}Match Explorer • AI Roommate Finder{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+  <div>
+    <h2 class="fw-bold mb-1"><i class="bi bi-stars text-primary me-2"></i>Match Explorer</h2>
+    <p class="text-muted mb-0">Select any profile to see ranked compatibility scores across all potential roommates.</p>
+  </div>
+</div>
+
+<!-- Profile Selector Card -->
+<div class="card p-4 mb-4 shadow-sm border-0">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-md-9">
+      <label class="form-label small fw-bold text-muted mb-1"><i class="bi bi-person-check me-1"></i> Choose Candidate Profile to Match</label>
+      <select name="profile" class="form-select form-select-lg rounded-3 fs-6">
+        <option value="">-- Select a Seeker Profile --</option>
+        {% for p in profiles %}
+          <option value="{{ p.pk }}" {% if selected.pk == p.pk %}selected{% endif %}>
+            {{ p.name }} — {{ p.city }} (Budget: ₹{{ p.budget_min }}–₹{{ p.budget_max }})
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <button class="btn btn-primary-custom btn-lg w-100 rounded-3 fs-6">
+        <i class="bi bi-search me-1"></i> Find Ranked Matches
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Match Results List -->
+{% if selected %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold mb-0">
+      Ranked Matches for <span class="text-primary">{{ selected.name }}</span> ({{ results|length }} candidates)
+    </h5>
+  </div>
+
+  <div class="d-flex flex-column gap-3 mb-5">
+    {% for r in results %}
+      <div class="card p-4 shadow-sm border-0 card-interactive">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="avatar-circle">
+              {{ r.profile.name|slice:":1" }}
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0">
+                <a href="/profiles/{{ r.profile.pk }}/" class="text-dark text-decoration-none">{{ r.profile.name }}</a>
+              </h5>
+              <span class="text-muted small">
+                <i class="bi bi-geo-alt-fill text-danger me-1"></i> {{ r.profile.city }} • Budget: ₹{{ r.profile.budget_min }}–₹{{ r.profile.budget_max }}
+              </span>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge-score-pill {% if r.total >= 80 %}score-excellent{% elif r.total >= 65 %}score-good{% elif r.total >= 50 %}score-moderate{% else %}score-low{% endif %} fs-6">
+              {{ r.total }}% • {{ r.level }}
+            </span>
+            <a href="/calculator/?a={{ selected.pk }}&b={{ r.profile.pk }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+              <i class="bi bi-calculator me-1"></i> Deep Breakdown
+            </a>
+          </div>
+        </div>
+
+        <!-- Visual Progress Bar -->
+        <div class="progress rounded-pill mb-3" style="height: 10px;">
+          <div class="progress-bar {% if r.total >= 80 %}bg-success{% elif r.total >= 65 %}bg-info{% elif r.total >= 50 %}bg-warning{% else %}bg-danger{% endif %}" style="width: {{ r.total }}%"></div>
+        </div>
+
+        <!-- Factor Breakdown Table -->
+        <div class="bg-light p-3 rounded-4 small">
+          <div class="row g-2">
+            {% for b in r.breakdown %}
+              <div class="col-md-6 col-lg-3">
+                <div class="p-2 bg-white rounded-3 border h-100">
+                  <div class="d-flex justify-content-between fw-bold mb-1">
+                    <span>{{ b.factor }}</span>
+                    <span class="text-primary">{{ b.score }}/{{ b.max }}</span>
+                  </div>
+                  <p class="text-muted small mb-0">{{ b.reason }}</p>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="text-center py-5">
+        <p class="text-muted">No other profiles to match against.</p>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="card p-5 text-center shadow-sm border-0">
+    <i class="bi bi-person-lines-fill display-3 text-primary mb-3"></i>
+    <h4 class="fw-bold">No Profile Selected</h4>
+    <p class="text-muted">Choose any seeker profile from the dropdown above to calculate instant AI roommate matches.</p>
+  </div>
+{% endif %}
+{% endblock %}
